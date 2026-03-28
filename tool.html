@@ -12,15 +12,22 @@ body {
   background: #f4f6f9;
 }
 
-/* Layout */
+/* MAIN GRID */
 .container {
   display: grid;
-  grid-template-columns: 1fr 1fr 300px;
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
   padding: 20px;
 }
 
-/* Panels */
+/* LEFT SIDE */
+.left-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* PANELS */
 .panel {
   background: #fff;
   border-radius: 15px;
@@ -28,13 +35,7 @@ body {
   box-shadow: 0 5px 20px rgba(0,0,0,0.1);
 }
 
-/* Headings */
-h2 {
-  margin-top: 0;
-  font-size: 1.3em;
-}
-
-/* Inputs */
+/* INPUTS */
 input, textarea {
   width: 100%;
   padding: 10px;
@@ -43,7 +44,7 @@ input, textarea {
   border: 1px solid #ccc;
 }
 
-/* Button */
+/* BUTTON */
 button {
   padding: 12px;
   width: 100%;
@@ -57,8 +58,20 @@ button:hover {
   background: #1558b0;
 }
 
-/* Resume Preview */
+/* JOB BOX BIG */
+#job {
+  height: 150px;
+}
+
+/* RIGHT SIDE */
+.right-side {
+  height: 100%;
+}
+
+/* RESUME PREVIEW */
 .resume {
+  height: 100%;
+  min-height: 500px;
   background: white;
   padding: 20px;
   border-radius: 10px;
@@ -78,35 +91,51 @@ button:hover {
   padding-bottom: 5px;
 }
 
-/* Suggestions */
-#suggestions {
-  font-size: 0.9em;
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
 }
-
 </style>
 </head>
+
 <body>
 
 <div class="container">
 
-  <!-- LEFT: INPUT -->
-  <div class="panel">
-    <h2>Build Your Resume</h2>
+  <!-- LEFT SIDE -->
+  <div class="left-side">
 
-    <input id="name" placeholder="Your Name">
+    <!-- BUILD SECTION -->
+    <div class="panel">
+      <h2>Build Your Resume</h2>
 
-    <textarea id="experience" placeholder="Your Experience..."></textarea>
+      <input id="name" placeholder="Your Name">
 
-    <textarea id="skills" placeholder="Your Skills..."></textarea>
+      <textarea id="experience" placeholder="Your Experience..."></textarea>
 
-    <h3>Job Description</h3>
-    <textarea id="job" placeholder="Paste job description..."></textarea>
+      <textarea id="skills" placeholder="Your Skills..."></textarea>
 
-    <button onclick="generateResume()">Generate Resume</button>
+      <!-- Upload -->
+      <input type="file" id="resumeUpload" accept=".pdf,.docx">
+
+      <h3>Job Description</h3>
+      <textarea id="job" placeholder="Paste job description..."></textarea>
+
+      <button onclick="generateResume()">Generate Resume</button>
+    </div>
+
+    <!-- SUGGESTIONS -->
+    <div class="panel">
+      <h2>Suggestions</h2>
+      <div id="suggestions">Suggestions will appear here...</div>
+    </div>
+
   </div>
 
-  <!-- CENTER: TEMPLATE PREVIEW -->
-  <div class="panel">
+  <!-- RIGHT SIDE -->
+  <div class="panel right-side">
     <h2>Live Resume Preview</h2>
 
     <div class="resume" id="resumePreview">
@@ -124,22 +153,51 @@ button:hover {
     </div>
   </div>
 
-  <!-- RIGHT: SUGGESTIONS -->
-  <div class="panel">
-    <h2>Suggestions</h2>
-    <div id="suggestions">Suggestions will appear here...</div>
-  </div>
-
 </div>
+
+<!-- LIBRARIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.14/mammoth.browser.min.js"></script>
 
 <script>
 const keySkills = ['javascript','react','python','management','design','seo'];
 
-function generateResume() {
+// PDF extract
+async function extractPDF(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(i => i.str).join(' ') + ' ';
+  }
+  return text;
+}
+
+// DOCX extract
+async function extractDOCX(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({arrayBuffer});
+  return result.value;
+}
+
+// MAIN FUNCTION
+async function generateResume() {
   const name = document.getElementById('name').value;
   const exp = document.getElementById('experience').value;
   const skills = document.getElementById('skills').value;
   const job = document.getElementById('job').value.toLowerCase();
+  const file = document.getElementById('resumeUpload').files[0];
+
+  let resumeText = (exp + " " + skills).toLowerCase();
+
+  // If file uploaded
+  if (file) {
+    if (file.name.endsWith('.pdf')) resumeText = await extractPDF(file);
+    else if (file.name.endsWith('.docx')) resumeText = await extractDOCX(file);
+    resumeText = resumeText.toLowerCase();
+  }
 
   // Update preview
   document.getElementById('resumePreview').innerHTML = `
@@ -160,15 +218,15 @@ function generateResume() {
   let suggestions = "<ul>";
 
   keySkills.forEach(skill => {
-    if (job.includes(skill) && !skills.toLowerCase().includes(skill)) {
-      suggestions += `<li>Add <b>${skill}</b> to your skills</li>`;
+    if (job.includes(skill) && !resumeText.includes(skill)) {
+      suggestions += `<li>Add <b>${skill}</b> to your resume</li>`;
     }
   });
 
   suggestions += `
-    <li>Use action verbs (Led, Built, Improved)</li>
-    <li>Add measurable results (e.g. increased sales by 20%)</li>
-    <li>Keep bullet points concise</li>
+    <li>Use strong action verbs (Led, Built, Improved)</li>
+    <li>Add measurable achievements</li>
+    <li>Tailor your resume for each job</li>
   </ul>`;
 
   document.getElementById('suggestions').innerHTML = suggestions;
