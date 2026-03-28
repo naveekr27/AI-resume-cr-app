@@ -6,99 +6,131 @@
 <title>Resume Improvement Tool</title>
 <link rel="stylesheet" href="styles.css">
 <style>
+/* Body and background */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  background: linear-gradient(135deg, #2c3e50, #4ca1af);
   min-height: 100vh;
   color: #fff;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding: 50px 0;
 }
+
+/* Container layout */
 .container {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
   max-width: 1200px;
   width: 90%;
-  animation: fadeIn 1.5s ease-in;
 }
-.section {
-  flex: 1 1 45%;
-  min-height: 450px;
+
+/* Left panel */
+.left-panel {
+  flex: 1 1 65%;
   background: rgba(255,255,255,0.1);
   backdrop-filter: blur(10px);
   padding: 30px;
   border-radius: 20px;
   box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-  animation: slideUp 1s ease-out;
 }
-.section h2 {
+
+/* Right panel */
+.right-panel {
+  flex: 1 1 30%;
+  max-height: 350px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px);
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  position: sticky;
+  top: 50px;
+  overflow-y: auto;
+}
+
+/* Headings */
+h2 {
   margin-top: 0;
   margin-bottom: 15px;
-  font-size: 1.8em;
-  text-align: center;
+  font-size: 1.5em;
 }
-textarea {
+
+/* Textareas and inputs */
+textarea, input[type=file] {
   width: 100%;
-  height: 150px;
-  padding: 15px;
+  padding: 12px;
+  margin-bottom: 15px;
   border-radius: 10px;
   border: 1px solid #ccc;
-  resize: vertical;
-  font-size: 1em;
-  outline: none;
-}
-input[type=file] {
-  display: block;
-  margin-bottom: 15px;
   font-size: 1em;
 }
+
+/* Button */
 button {
-  margin-top: 10px;
   padding: 12px 25px;
   font-size: 1em;
   color: #fff;
-  background-color: #ff6a00;
+  background-color: #1abc9c;
   border: none;
   border-radius: 50px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 button:hover {
-  background-color: #ff3d00;
+  background-color: #16a085;
   transform: scale(1.05);
 }
+
+/* Suggestions panel */
 #suggestions {
-  font-size: 1em;
-  line-height: 1.5;
+  font-size: 0.95em;
+  line-height: 1.4;
 }
+
+/* Animations */
 @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
 @keyframes slideUp { from {transform: translateY(50px); opacity:0;} to {transform: translateY(0); opacity:1;} }
-@media (max-width: 900px) { .section { flex: 1 1 100%; } }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .left-panel, .right-panel { flex: 1 1 100%; position: relative; max-height: none; }
+}
 </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="section">
-    <h2>Job & Resume</h2>
-    <textarea id="jobDescription" placeholder="Paste job description here..."></textarea>
+  <!-- Left Panel -->
+  <div class="left-panel">
+    <!-- Resume Section -->
+    <h2>Resume</h2>
+    <textarea id="resumeText" placeholder="Optionally paste your resume here..."></textarea>
     <input type="file" id="resumeUpload" accept=".pdf,.docx">
+    
+    <!-- Job Description Section -->
+    <h2>Job Description</h2>
+    <textarea id="jobDescription" placeholder="Paste job description here..."></textarea>
+    
     <button onclick="analyzeResume()">Analyze Resume</button>
   </div>
-  <div class="section">
+
+  <!-- Right Panel: Suggestions -->
+  <div class="right-panel">
     <h2>Suggestions</h2>
-    <div id="suggestions">Paste a job description and upload your resume to get suggestions.</div>
+    <div id="suggestions">Paste a job description and upload your resume to see suggestions.</div>
   </div>
 </div>
 
-<!-- Libraries for PDF & DOCX -->
+<!-- Libraries for PDF & DOCX parsing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.14/mammoth.browser.min.js"></script>
 
 <script>
+// Skills and action tips
 const keySkills = ['JavaScript','React','CSS','HTML','Python','Marketing','Design','SEO','Project Management','UI/UX','Team Leadership'];
 const actionTips = [
   'Use strong action verbs in your bullet points.',
@@ -108,7 +140,7 @@ const actionTips = [
   'Keep bullet points concise and achievement-focused.'
 ];
 
-// Extract text from PDF
+// PDF extraction
 async function extractPDF(file) {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
@@ -122,7 +154,7 @@ async function extractPDF(file) {
   return text;
 }
 
-// Extract text from DOCX
+// DOCX extraction
 async function extractDOCX(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -136,15 +168,15 @@ async function extractDOCX(file) {
   });
 }
 
-// Main analysis function
+// Analyze resume vs job description
 async function analyzeResume() {
+  let resumeText = document.getElementById('resumeText').value.toLowerCase();
   const jobText = document.getElementById('jobDescription').value.toLowerCase();
   const resumeFile = document.getElementById('resumeUpload').files[0];
   const suggestionsDiv = document.getElementById('suggestions');
-  let resumeText = '';
 
-  if (!jobText.trim() && !resumeFile) {
-    suggestionsDiv.innerHTML = 'Please provide a job description or upload a resume.';
+  if (!jobText.trim() && !resumeText && !resumeFile) {
+    suggestionsDiv.innerHTML = 'Please provide a job description or upload/paste your resume.';
     return;
   }
 
@@ -176,5 +208,6 @@ async function analyzeResume() {
   suggestionsDiv.innerHTML = suggestionsHTML;
 }
 </script>
+
 </body>
 </html>
