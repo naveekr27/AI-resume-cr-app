@@ -12,7 +12,7 @@ body {
   background: #f4f6f9;
 }
 
-/* MAIN GRID */
+/* GRID */
 .container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -20,7 +20,7 @@ body {
   padding: 20px;
 }
 
-/* LEFT SIDE */
+/* LEFT */
 .left-side {
   display: flex;
   flex-direction: column;
@@ -58,12 +58,12 @@ button:hover {
   background: #1558b0;
 }
 
-/* JOB BOX BIG */
+/* JOB BOX */
 #job {
   height: 150px;
 }
 
-/* RIGHT SIDE */
+/* RIGHT */
 .right-side {
   height: 100%;
 }
@@ -91,6 +91,12 @@ button:hover {
   padding-bottom: 5px;
 }
 
+/* SUGGESTIONS */
+#suggestions {
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
 /* RESPONSIVE */
 @media (max-width: 900px) {
   .container {
@@ -104,10 +110,10 @@ button:hover {
 
 <div class="container">
 
-  <!-- LEFT SIDE -->
+  <!-- LEFT -->
   <div class="left-side">
 
-    <!-- BUILD SECTION -->
+    <!-- BUILD -->
     <div class="panel">
       <h2>Build Your Resume</h2>
 
@@ -117,7 +123,6 @@ button:hover {
 
       <textarea id="skills" placeholder="Your Skills..."></textarea>
 
-      <!-- Upload -->
       <input type="file" id="resumeUpload" accept=".pdf,.docx">
 
       <h3>Job Description</h3>
@@ -128,13 +133,13 @@ button:hover {
 
     <!-- SUGGESTIONS -->
     <div class="panel">
-      <h2>Suggestions</h2>
-      <div id="suggestions">Suggestions will appear here...</div>
+      <h2>AI Suggestions</h2>
+      <div id="suggestions">Upload resume + job description to get AI feedback.</div>
     </div>
 
   </div>
 
-  <!-- RIGHT SIDE -->
+  <!-- RIGHT -->
   <div class="panel right-side">
     <h2>Live Resume Preview</h2>
 
@@ -160,9 +165,7 @@ button:hover {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.14/mammoth.browser.min.js"></script>
 
 <script>
-const keySkills = ['javascript','react','python','management','design','seo'];
-
-// PDF extract
+// Extract PDF
 async function extractPDF(file) {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
@@ -175,11 +178,28 @@ async function extractPDF(file) {
   return text;
 }
 
-// DOCX extract
+// Extract DOCX
 async function extractDOCX(file) {
   const arrayBuffer = await file.arrayBuffer();
   const result = await mammoth.extractRawText({arrayBuffer});
   return result.value;
+}
+
+// 🔥 AI CALL (to your backend)
+async function getAISuggestions(resumeText, jobText) {
+  const response = await fetch("http://localhost:3000/ai", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      resume: resumeText,
+      job: jobText
+    })
+  });
+
+  const data = await response.json();
+  return data.choices[0].message.content;
 }
 
 // MAIN FUNCTION
@@ -187,16 +207,15 @@ async function generateResume() {
   const name = document.getElementById('name').value;
   const exp = document.getElementById('experience').value;
   const skills = document.getElementById('skills').value;
-  const job = document.getElementById('job').value.toLowerCase();
+  const job = document.getElementById('job').value;
   const file = document.getElementById('resumeUpload').files[0];
 
-  let resumeText = (exp + " " + skills).toLowerCase();
+  let resumeText = exp + " " + skills;
 
-  // If file uploaded
+  // File support
   if (file) {
     if (file.name.endsWith('.pdf')) resumeText = await extractPDF(file);
     else if (file.name.endsWith('.docx')) resumeText = await extractDOCX(file);
-    resumeText = resumeText.toLowerCase();
   }
 
   // Update preview
@@ -214,22 +233,19 @@ async function generateResume() {
     </div>
   `;
 
-  // Suggestions
-  let suggestions = "<ul>";
+  // Show loading
+  const suggestionsDiv = document.getElementById('suggestions');
+  suggestionsDiv.innerHTML = "🤖 Analyzing with AI...";
 
-  keySkills.forEach(skill => {
-    if (job.includes(skill) && !resumeText.includes(skill)) {
-      suggestions += `<li>Add <b>${skill}</b> to your resume</li>`;
-    }
-  });
+  try {
+    const aiSuggestions = await getAISuggestions(resumeText, job);
 
-  suggestions += `
-    <li>Use strong action verbs (Led, Built, Improved)</li>
-    <li>Add measurable achievements</li>
-    <li>Tailor your resume for each job</li>
-  </ul>`;
-
-  document.getElementById('suggestions').innerHTML = suggestions;
+    suggestionsDiv.innerHTML = `
+      <div style="white-space: pre-line;">${aiSuggestions}</div>
+    `;
+  } catch (error) {
+    suggestionsDiv.innerHTML = "Error connecting to AI backend.";
+  }
 }
 </script>
 
