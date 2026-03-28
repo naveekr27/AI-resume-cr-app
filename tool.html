@@ -3,209 +3,175 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resume Improvement Tool</title>
-<link rel="stylesheet" href="styles.css">
+<title>Resume Builder</title>
+
 <style>
-/* Body and background */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #2c3e50, #4ca1af);
-  min-height: 100vh;
-  color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 50px 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4f6f9;
 }
 
-/* Container layout */
+/* Layout */
 .container {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr 300px;
   gap: 20px;
-  max-width: 1200px;
-  width: 90%;
-}
-
-/* Left panel */
-.left-panel {
-  flex: 1 1 65%;
-  background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(10px);
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-}
-
-/* Right panel */
-.right-panel {
-  flex: 1 1 30%;
-  max-height: 350px;
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(8px);
   padding: 20px;
-  border-radius: 20px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-  position: sticky;
-  top: 50px;
-  overflow-y: auto;
+}
+
+/* Panels */
+.panel {
+  background: #fff;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
 }
 
 /* Headings */
 h2 {
   margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 1.5em;
+  font-size: 1.3em;
 }
 
-/* Textareas and inputs */
-textarea, input[type=file] {
+/* Inputs */
+input, textarea {
   width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
   border: 1px solid #ccc;
-  font-size: 1em;
 }
 
 /* Button */
 button {
-  padding: 12px 25px;
-  font-size: 1em;
-  color: #fff;
-  background-color: #1abc9c;
+  padding: 12px;
+  width: 100%;
   border: none;
-  border-radius: 50px;
+  border-radius: 10px;
+  background: #1a73e8;
+  color: white;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
 button:hover {
-  background-color: #16a085;
-  transform: scale(1.05);
+  background: #1558b0;
 }
 
-/* Suggestions panel */
+/* Resume Preview */
+.resume {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.resume h1 {
+  margin: 0;
+  color: #1a73e8;
+}
+
+.resume-section {
+  margin-top: 15px;
+}
+
+.resume-section h3 {
+  border-bottom: 2px solid #1a73e8;
+  padding-bottom: 5px;
+}
+
+/* Suggestions */
 #suggestions {
-  font-size: 0.95em;
-  line-height: 1.4;
+  font-size: 0.9em;
 }
 
-/* Animations */
-@keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
-@keyframes slideUp { from {transform: translateY(50px); opacity:0;} to {transform: translateY(0); opacity:1;} }
-
-/* Responsive */
-@media (max-width: 900px) {
-  .left-panel, .right-panel { flex: 1 1 100%; position: relative; max-height: none; }
-}
 </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- Left Panel -->
-  <div class="left-panel">
-    <!-- Resume Section -->
-    <h2>Resume</h2>
-    <textarea id="resumeText" placeholder="Optionally paste your resume here..."></textarea>
-    <input type="file" id="resumeUpload" accept=".pdf,.docx">
-    
-    <!-- Job Description Section -->
-    <h2>Job Description</h2>
-    <textarea id="jobDescription" placeholder="Paste job description here..."></textarea>
-    
-    <button onclick="analyzeResume()">Analyze Resume</button>
+
+  <!-- LEFT: INPUT -->
+  <div class="panel">
+    <h2>Build Your Resume</h2>
+
+    <input id="name" placeholder="Your Name">
+
+    <textarea id="experience" placeholder="Your Experience..."></textarea>
+
+    <textarea id="skills" placeholder="Your Skills..."></textarea>
+
+    <h3>Job Description</h3>
+    <textarea id="job" placeholder="Paste job description..."></textarea>
+
+    <button onclick="generateResume()">Generate Resume</button>
   </div>
 
-  <!-- Right Panel: Suggestions -->
-  <div class="right-panel">
-    <h2>Suggestions</h2>
-    <div id="suggestions">Paste a job description and upload your resume to see suggestions.</div>
+  <!-- CENTER: TEMPLATE PREVIEW -->
+  <div class="panel">
+    <h2>Live Resume Preview</h2>
+
+    <div class="resume" id="resumePreview">
+      <h1>Your Name</h1>
+
+      <div class="resume-section">
+        <h3>Experience</h3>
+        <p>Your experience will appear here...</p>
+      </div>
+
+      <div class="resume-section">
+        <h3>Skills</h3>
+        <p>Your skills will appear here...</p>
+      </div>
+    </div>
   </div>
+
+  <!-- RIGHT: SUGGESTIONS -->
+  <div class="panel">
+    <h2>Suggestions</h2>
+    <div id="suggestions">Suggestions will appear here...</div>
+  </div>
+
 </div>
 
-<!-- Libraries for PDF & DOCX parsing -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.14/mammoth.browser.min.js"></script>
-
 <script>
-// Skills and action tips
-const keySkills = ['JavaScript','React','CSS','HTML','Python','Marketing','Design','SEO','Project Management','UI/UX','Team Leadership'];
-const actionTips = [
-  'Use strong action verbs in your bullet points.',
-  'Include measurable results (e.g., increased sales by 20%).',
-  'Highlight missing skills mentioned in the job description.',
-  'Include relevant certifications or education.',
-  'Keep bullet points concise and achievement-focused.'
-];
+const keySkills = ['javascript','react','python','management','design','seo'];
 
-// PDF extraction
-async function extractPDF(file) {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
-  let text = '';
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const strings = content.items.map(item => item.str);
-    text += strings.join(' ') + ' ';
-  }
-  return text;
-}
+function generateResume() {
+  const name = document.getElementById('name').value;
+  const exp = document.getElementById('experience').value;
+  const skills = document.getElementById('skills').value;
+  const job = document.getElementById('job').value.toLowerCase();
 
-// DOCX extraction
-async function extractDOCX(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = async function(event) {
-      const arrayBuffer = event.target.result;
-      const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
-      resolve(result.value);
-    };
-    reader.onerror = reject;
-    reader.readAsArrayBuffer(file);
+  // Update preview
+  document.getElementById('resumePreview').innerHTML = `
+    <h1>${name || "Your Name"}</h1>
+
+    <div class="resume-section">
+      <h3>Experience</h3>
+      <p>${exp || "Add your experience..."}</p>
+    </div>
+
+    <div class="resume-section">
+      <h3>Skills</h3>
+      <p>${skills || "Add your skills..."}</p>
+    </div>
+  `;
+
+  // Suggestions
+  let suggestions = "<ul>";
+
+  keySkills.forEach(skill => {
+    if (job.includes(skill) && !skills.toLowerCase().includes(skill)) {
+      suggestions += `<li>Add <b>${skill}</b> to your skills</li>`;
+    }
   });
-}
 
-// Analyze resume vs job description
-async function analyzeResume() {
-  let resumeText = document.getElementById('resumeText').value.toLowerCase();
-  const jobText = document.getElementById('jobDescription').value.toLowerCase();
-  const resumeFile = document.getElementById('resumeUpload').files[0];
-  const suggestionsDiv = document.getElementById('suggestions');
+  suggestions += `
+    <li>Use action verbs (Led, Built, Improved)</li>
+    <li>Add measurable results (e.g. increased sales by 20%)</li>
+    <li>Keep bullet points concise</li>
+  </ul>`;
 
-  if (!jobText.trim() && !resumeText && !resumeFile) {
-    suggestionsDiv.innerHTML = 'Please provide a job description or upload/paste your resume.';
-    return;
-  }
-
-  if (resumeFile) {
-    if (resumeFile.name.endsWith('.pdf')) resumeText = await extractPDF(resumeFile);
-    else if (resumeFile.name.endsWith('.docx')) resumeText = await extractDOCX(resumeFile);
-    resumeText = resumeText.toLowerCase();
-  }
-
-  const foundSkills = keySkills.filter(skill => jobText.includes(skill.toLowerCase()));
-  const missingSkills = foundSkills.filter(skill => !resumeText.includes(skill.toLowerCase()));
-
-  let suggestionsHTML = '<ul>';
-
-  if (foundSkills.length === 0) {
-    suggestionsHTML += '<li>No key skills detected in job description.</li>';
-  } else {
-    foundSkills.forEach(skill => {
-      if (!resumeText.includes(skill.toLowerCase())) {
-        suggestionsHTML += `<li>Add <strong>${skill}</strong> to your resume if relevant.</li>`;
-      } else {
-        suggestionsHTML += `<li>Your resume already mentions <strong>${skill}</strong>.</li>`;
-      }
-    });
-  }
-
-  actionTips.forEach(tip => suggestionsHTML += `<li>${tip}</li>`);
-  suggestionsHTML += '</ul>';
-  suggestionsDiv.innerHTML = suggestionsHTML;
+  document.getElementById('suggestions').innerHTML = suggestions;
 }
 </script>
 
