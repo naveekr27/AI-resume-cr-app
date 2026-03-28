@@ -20,7 +20,7 @@ body {
   padding: 20px;
 }
 
-/* LEFT */
+/* LEFT SIDE */
 .left-side {
   display: flex;
   flex-direction: column;
@@ -63,7 +63,7 @@ button:hover {
   height: 150px;
 }
 
-/* RIGHT */
+/* RIGHT SIDE */
 .right-side {
   height: 100%;
 }
@@ -110,10 +110,10 @@ button:hover {
 
 <div class="container">
 
-  <!-- LEFT -->
+  <!-- LEFT SIDE -->
   <div class="left-side">
 
-    <!-- BUILD -->
+    <!-- BUILD RESUME -->
     <div class="panel">
       <h2>Build Your Resume</h2>
 
@@ -131,7 +131,7 @@ button:hover {
       <button onclick="generateResume()">Generate Resume</button>
     </div>
 
-    <!-- SUGGESTIONS -->
+    <!-- AI SUGGESTIONS -->
     <div class="panel">
       <h2>AI Suggestions</h2>
       <div id="suggestions">Upload resume + job description to get AI feedback.</div>
@@ -139,7 +139,7 @@ button:hover {
 
   </div>
 
-  <!-- RIGHT -->
+  <!-- RIGHT SIDE -->
   <div class="panel right-side">
     <h2>Live Resume Preview</h2>
 
@@ -165,7 +165,7 @@ button:hover {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.14/mammoth.browser.min.js"></script>
 
 <script>
-// Extract PDF
+// Extract PDF text
 async function extractPDF(file) {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
@@ -178,31 +178,26 @@ async function extractPDF(file) {
   return text;
 }
 
-// Extract DOCX
+// Extract DOCX text
 async function extractDOCX(file) {
   const arrayBuffer = await file.arrayBuffer();
   const result = await mammoth.extractRawText({arrayBuffer});
   return result.value;
 }
 
-// 🔥 AI CALL (to your backend)
+// AI call to backend
 async function getAISuggestions(resumeText, jobText) {
   const response = await fetch("http://localhost:3000/ai", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      resume: resumeText,
-      job: jobText
-    })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ resume: resumeText, job: jobText })
   });
 
   const data = await response.json();
   return data.choices[0].message.content;
 }
 
-// MAIN FUNCTION
+// Generate Resume & AI Suggestions
 async function generateResume() {
   const name = document.getElementById('name').value;
   const exp = document.getElementById('experience').value;
@@ -212,13 +207,13 @@ async function generateResume() {
 
   let resumeText = exp + " " + skills;
 
-  // File support
+  // Extract text if file uploaded
   if (file) {
     if (file.name.endsWith('.pdf')) resumeText = await extractPDF(file);
     else if (file.name.endsWith('.docx')) resumeText = await extractDOCX(file);
   }
 
-  // Update preview
+  // Update live preview
   document.getElementById('resumePreview').innerHTML = `
     <h1>${name || "Your Name"}</h1>
 
@@ -239,12 +234,10 @@ async function generateResume() {
 
   try {
     const aiSuggestions = await getAISuggestions(resumeText, job);
-
-    suggestionsDiv.innerHTML = `
-      <div style="white-space: pre-line;">${aiSuggestions}</div>
-    `;
+    suggestionsDiv.innerHTML = `<div style="white-space: pre-line;">${aiSuggestions}</div>`;
   } catch (error) {
-    suggestionsDiv.innerHTML = "Error connecting to AI backend.";
+    console.error(error);
+    suggestionsDiv.innerHTML = "❌ Error connecting to AI backend.";
   }
 }
 </script>
