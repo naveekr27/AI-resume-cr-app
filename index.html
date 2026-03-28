@@ -3,87 +3,117 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Welcome - Resume Helper</title>
-<link rel="stylesheet" href="styles.css">
+<title>Smart Resume Builder</title>
+
 <style>
-/* Full-page gradient background */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
-  color: #fff;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4f6f9;
+  color: #333;
 }
 
-/* Welcome container */
-.welcome-container {
-  background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(10px);
-  padding: 50px;
-  border-radius: 20px;
+/* HERO */
+.hero {
   text-align: center;
-  max-width: 600px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-  animation: fadeIn 1.5s ease-in-out;
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #1a73e8, #6dd5ed);
+  color: white;
 }
 
-/* Title animation */
-h1 {
+.hero h1 {
   font-size: 3em;
-  margin-bottom: 20px;
-  animation: slideIn 1s ease-out;
+  margin-bottom: 15px;
 }
 
-/* Subtitle animation */
-p {
+.hero p {
   font-size: 1.2em;
-  margin-bottom: 40px;
-  line-height: 1.5;
-  animation: fadeIn 2s ease-in;
+  margin-bottom: 30px;
 }
 
-/* Button style */
-button {
-  padding: 15px 35px;
-  font-size: 1.1em;
-  color: #fff;
-  background-color: #ff6a00;
+.hero button {
+  padding: 15px 40px;
+  font-size: 1em;
   border: none;
   border-radius: 50px;
+  background: white;
+  color: #1a73e8;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: 0.3s;
 }
-button:hover {
-  background-color: #ff3d00;
+.hero button:hover {
   transform: scale(1.05);
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {opacity: 0;}
-  to {opacity: 1;}
-}
-@keyframes slideIn {
-  from {transform: translateY(-50px); opacity: 0;}
-  to {transform: translateY(0); opacity: 1;}
+/* FEATURES */
+.features {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding: 50px 20px;
 }
 
-/* Responsive */
-@media (max-width: 700px) {
-  h1 { font-size: 2em; }
-  p { font-size: 1em; }
-  button { padding: 12px 25px; font-size: 1em; }
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  width: 250px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card h3 {
+  margin-top: 10px;
+}
+
+/* FOOTER */
+.footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.9em;
+  color: #777;
 }
 </style>
 </head>
 <body>
-<div class="welcome-container">
-  <h1>Welcome to Resume Helper</h1>
-  <p>Boost your resume instantly! Paste any job description and get tailored suggestions to improve your resume and highlight the skills employers are looking for.</p>
-  <button onclick="location.href='tool.html'">Get Started</button>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Smart Resume Builder</h1>
+  <p>Create job-winning resumes tailored to any job description in seconds.</p>
+  <button onclick="location.href='tool.html'">Start Building</button>
 </div>
+
+<!-- FEATURES -->
+<div class="features">
+
+  <div class="card">
+    <h3>📄 Resume Templates</h3>
+    <p>Build your resume using clean, professional templates.</p>
+  </div>
+
+  <div class="card">
+    <h3>⚡ Smart Suggestions</h3>
+    <p>Get instant feedback based on job descriptions.</p>
+  </div>
+
+  <div class="card">
+    <h3>🎯 Job Matching</h3>
+    <p>Optimize your resume to match the exact job requirements.</p>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  © 2026 Smart Resume Builder
+</div>
+
 </body>
 </html>
