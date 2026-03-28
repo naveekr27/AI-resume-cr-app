@@ -42,7 +42,7 @@ body {
 }
 textarea {
   width: 100%;
-  height: 200px;
+  height: 150px;
   padding: 15px;
   border-radius: 10px;
   border: 1px solid #ccc;
@@ -83,17 +83,18 @@ button:hover {
 
 <div class="container">
   <div class="section">
-    <h2>Job Description</h2>
-    <input type="file" id="resumeUpload" accept=".pdf,.docx">
+    <h2>Job & Resume</h2>
     <textarea id="jobDescription" placeholder="Paste job description here..."></textarea>
-    <button onclick="analyzeResume()">Analyze</button>
+    <input type="file" id="resumeUpload" accept=".pdf,.docx">
+    <button onclick="analyzeResume()">Analyze Resume</button>
   </div>
   <div class="section">
-    <h2>Resume Suggestions</h2>
-    <div id="suggestions">Paste a job description, upload your resume, and click Analyze to see improvements.</div>
+    <h2>Suggestions</h2>
+    <div id="suggestions">Paste a job description and upload your resume to get suggestions.</div>
   </div>
 </div>
 
+<!-- Libraries for PDF & DOCX -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.9.179/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.14/mammoth.browser.min.js"></script>
 
@@ -102,17 +103,17 @@ const keySkills = ['JavaScript','React','CSS','HTML','Python','Marketing','Desig
 const actionTips = [
   'Use strong action verbs in your bullet points.',
   'Include measurable results (e.g., increased sales by 20%).',
-  'Emphasize missing key skills mentioned in the job description.',
-  'Highlight relevant certifications or education.',
+  'Highlight missing skills mentioned in the job description.',
+  'Include relevant certifications or education.',
   'Keep bullet points concise and achievement-focused.'
 ];
 
-// Function to extract text from PDF
+// Extract text from PDF
 async function extractPDF(file) {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
   let text = '';
-  for (let i=1; i<=pdf.numPages; i++){
+  for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
     const strings = content.items.map(item => item.str);
@@ -121,7 +122,7 @@ async function extractPDF(file) {
   return text;
 }
 
-// Function to extract text from DOCX
+// Extract text from DOCX
 async function extractDOCX(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -135,7 +136,7 @@ async function extractDOCX(file) {
   });
 }
 
-// Main analyze function
+// Main analysis function
 async function analyzeResume() {
   const jobText = document.getElementById('jobDescription').value.toLowerCase();
   const resumeFile = document.getElementById('resumeUpload').files[0];
@@ -153,21 +154,23 @@ async function analyzeResume() {
     resumeText = resumeText.toLowerCase();
   }
 
-  // Find skills mentioned in job description
   const foundSkills = keySkills.filter(skill => jobText.includes(skill.toLowerCase()));
   const missingSkills = foundSkills.filter(skill => !resumeText.includes(skill.toLowerCase()));
 
-  // Build suggestions HTML
   let suggestionsHTML = '<ul>';
-  foundSkills.forEach(skill => {
-    if (!resumeText.includes(skill.toLowerCase())) {
-      suggestionsHTML += `<li>Add <strong>${skill}</strong> to your resume if relevant.</li>`;
-    } else {
-      suggestionsHTML += `<li>You already have <strong>${skill}</strong> in your resume.</li>`;
-    }
-  });
 
-  // Add general action tips
+  if (foundSkills.length === 0) {
+    suggestionsHTML += '<li>No key skills detected in job description.</li>';
+  } else {
+    foundSkills.forEach(skill => {
+      if (!resumeText.includes(skill.toLowerCase())) {
+        suggestionsHTML += `<li>Add <strong>${skill}</strong> to your resume if relevant.</li>`;
+      } else {
+        suggestionsHTML += `<li>Your resume already mentions <strong>${skill}</strong>.</li>`;
+      }
+    });
+  }
+
   actionTips.forEach(tip => suggestionsHTML += `<li>${tip}</li>`);
   suggestionsHTML += '</ul>';
   suggestionsDiv.innerHTML = suggestionsHTML;
