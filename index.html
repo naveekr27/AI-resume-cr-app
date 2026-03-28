@@ -6,15 +6,84 @@
 <title>Welcome - Resume Helper</title>
 <link rel="stylesheet" href="styles.css">
 <style>
-.welcome-container { max-width: 600px; margin: 100px auto; background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.2); text-align: center; }
-p { font-size: 18px; margin-bottom: 30px; }
+/* Full-page gradient background */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: #fff;
+}
+
+/* Welcome container */
+.welcome-container {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  padding: 50px;
+  border-radius: 20px;
+  text-align: center;
+  max-width: 600px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+/* Title animation */
+h1 {
+  font-size: 3em;
+  margin-bottom: 20px;
+  animation: slideIn 1s ease-out;
+}
+
+/* Subtitle animation */
+p {
+  font-size: 1.2em;
+  margin-bottom: 40px;
+  line-height: 1.5;
+  animation: fadeIn 2s ease-in;
+}
+
+/* Button style */
+button {
+  padding: 15px 35px;
+  font-size: 1.1em;
+  color: #fff;
+  background-color: #ff6a00;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+button:hover {
+  background-color: #ff3d00;
+  transform: scale(1.05);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+@keyframes slideIn {
+  from {transform: translateY(-50px); opacity: 0;}
+  to {transform: translateY(0); opacity: 1;}
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  h1 { font-size: 2em; }
+  p { font-size: 1em; }
+  button { padding: 12px 25px; font-size: 1em; }
+}
 </style>
 </head>
 <body>
 <div class="welcome-container">
-<h1>Welcome to Resume Helper</h1>
-<p>Boost your resume instantly! Paste any job description and get tailored suggestions to improve your resume according to the skills and keywords employers are looking for.</p>
-<button onclick="location.href='tool.html'">Get Started</button>
+  <h1>Welcome to Resume Helper</h1>
+  <p>Boost your resume instantly! Paste any job description and get tailored suggestions to improve your resume and highlight the skills employers are looking for.</p>
+  <button onclick="location.href='tool.html'">Get Started</button>
 </div>
 </body>
 </html>
